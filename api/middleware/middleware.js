@@ -10,20 +10,17 @@ function logger(req, res, next) {
 
 async function validateUserId(req, res, next) {
   // DO YOUR MAGIC
-  try {
-    const userId = await Users.getById(req.params.id)
-    if (userId) {
-      req.userId = userId;
-      next();
-    } else {
-      // next({status: 404, message: 'user not found'})
-      res.status(404).json({message: 'user not found'})
-    }
-  } catch (error) {
-    // next(error);
-    res.status(500).json({message: 'problem finding user'});
+ try {
+  const user = await Users.getById(req.params.id)
+  if (!user) {
+    res.status(404).json({ message: 'user not found'})
+  } else {
+    req.user = user
+    next()
   }
-
+ } catch (error) {
+  res.status(500).json({ message: 'problem finding user' })
+ }
 }
 
 function validateUser(req, res, next) {
@@ -40,15 +37,11 @@ function validateUser(req, res, next) {
 function validatePost(req, res, next) {
   // DO YOUR MAGIC
   const { text } = req.body;
-  if (
-    text !== undefined &&
-    typeof text === 'string' &&
-    text.length &&
-    text.trim().length
-  ){
-    next();
+  if (!text || !text.trim()) {
+    res.status(400).json({ message: 'missing required text field' })
   } else {
-    next({status: 400, message: 'missing required text field'})
+    req.text = text.trim()
+    next()
   }
 }
 
