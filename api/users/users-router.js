@@ -12,7 +12,7 @@ const {
 
 const router = express.Router();
 
-router.get('/', logger, (req, res) => {
+router.get('/', logger, (req, res, next) => {
   // RETURN AN ARRAY WITH ALL THE USERS
   Users.get(req.query)
     .then(users => {
@@ -23,20 +23,38 @@ router.get('/', logger, (req, res) => {
     })
 });
 
-router.get('/:id', validateUserId, (req, res) => {
+router.get('/:id', validateUserId, (req, res, next) => {
   // RETURN THE USER OBJECT
   // this needs a middleware to verify user id
+  Users.getById(req.params.id)
+    .then(user => {
+      res.json(user)
+    })
+    .catch(next)
 });
 
-router.post('/', validateUser, (req, res) => {
+router.post('/', validateUser, (req, res, next) => {
   // RETURN THE NEWLY CREATED USER OBJECT
   // this needs a middleware to check that the request body is valid
+  Users.insert({ name: req.name })
+    .then(user => {
+      res.status(201).json(user);
+    })
+    .catch(next)
 });
 
-router.put('/:id', validateUserId, validateUser, (req, res) => {
+router.put('/:id', validateUserId, validateUser, (req, res, next) => {
   // RETURN THE FRESHLY UPDATED USER OBJECT
   // this needs a middleware to verify user id
   // and another middleware to check that the request body is valid
+  Users.update(req.params.id, { name: req.name })
+    .then( () => {
+      return Users.getById(req.params.id)
+    })
+    .then(user => {
+      res.json(user)
+    })
+    .catch(next);
 });
 
 router.delete('/:id', validateUserId, (req, res) => {

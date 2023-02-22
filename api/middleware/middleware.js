@@ -29,16 +29,11 @@ async function validateUserId(req, res, next) {
 function validateUser(req, res, next) {
   // DO YOUR MAGIC
   const { name } = req.body;
-  if (
-    name !== undefined &&
-    typeof name === 'string' &&
-    name.length &&
-    name.trim().length
-  ) {
-    next();
+  if (!name || !name.trim()) {
+    res.status(400).json({message: 'missing required name'})
   } else {
-    // next({status: 400, message: 'missing required name field'});
-    res.status(400).json({message: 'missing required name'});
+    req.name = name.trim();
+    next();
   }
 }
 
